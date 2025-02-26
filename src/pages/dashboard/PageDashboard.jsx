@@ -397,7 +397,7 @@ const Dashboard = () => {
             <canvas id="myChart" width="400" height="200"></canvas>
           </Card>
 
-          <Card style={{ backgroundColor: "pink", width: "200px", height: "300px", marginLeft: "8px" }}>
+          <Card style={{  backgroundColor: "#03091288", width: "200px", height: "300px", marginLeft: "8px" }}>
 
           </Card>
         </Grid2>
