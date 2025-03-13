@@ -1,33 +1,29 @@
 # Keychain ERP
 
-**Keychain ERP** é um sistema de gestão de vendas, projetado para fornecer funcionalidades robustas para controle de vendas, produtos, clientes, estoque e análise de metas. O sistema conta com dashboards interativos para análise de dados e uso de Firebase para autenticação e persistência.
+Keychain ERP é um sistema de gestão empresarial desenvolvido para controle de estoque, cadastro de produtos e clientes, análise de vendas e monitoramento de metas. Ele proporciona uma visão detalhada do desempenho da empresa, ajudando na tomada de decisões estratégicas.
 
-## Tecnologias Utilizadas
+## 🚀 Tecnologias Utilizadas
 
-- **React**: Framework JavaScript para construção de interfaces de usuário interativas.
-- **Firebase**: Backend para autenticação e persistência de dados em tempo real.
-- **Material-UI (Mui)**: Biblioteca de componentes React para interfaces de usuário modernas e responsivas.
-- **Recharts**: Biblioteca para visualização de dados através de gráficos interativos.
+- **React** – Biblioteca JavaScript para construção de interfaces dinâmicas e reativas.  
+- **Firebase** – Banco de dados e autenticação em tempo real.  
+- **Material UI (MUI)** – Biblioteca de componentes estilizados e responsivos.  
+- **Recharts** – Biblioteca para geração de gráficos interativos.  
 
-## Funcionalidades
+## 📌 Motivação do Projeto
 
-- **Cadastro de Produtos**: Adicione, edite ou exclua produtos.
-- **Cadastro de Clientes**: Gerencie informações dos clientes.
-- **Controle de Estoque**: Mantenha o controle das quantidades de produtos disponíveis.
-- **Dashboards**: Visualização interativa de dados, como vendas, estoque e metas.
-- **Autenticação**: Login e cadastro de usuários utilizando Firebase.
-- **Análise de Metas**: Gráficos para monitoramento de metas de vendas.
+A criação do **Keychain ERP** surgiu da necessidade de um colega que precisava de um sistema eficiente para controle de estoque em sua empresa. Ao enxergar essa demanda, aproveitei a oportunidade para unir o útil ao agradável: desenvolver uma solução prática enquanto aprimorava minhas habilidades em desenvolvimento web.  
 
+Com o tempo, novas ideias de funcionalidades foram surgindo e o projeto foi se tornando mais robusto e complexo. Esse processo me permitiu aprender bastante e ainda continuo evoluindo a aplicação, aplicando boas práticas e buscando torná-la cada vez mais eficiente e performática.
 
-## Deployment
+🌍 **Deploy**  
+O projeto está disponível online através do Vercel:
 
-A aplicação está disponível para uso em produção. Você pode acessar o projeto através do seguinte link:
+🔗 Acesse aqui: [keychain-erp.vercel.app](https://keychain-erp.vercel.app)
 
-- **Aplicação ao vivo**: [Keychain ERP](https://keychain-erp.vercel.app)
+## 🛠️ Como Usar
 
+Para rodar o projeto localmente, siga os passos abaixo:
 
-## Como Rodar o Projeto Localmente
-
-1. Clone este repositório:
+1. **Clone o repositório**  
    ```bash
    git clone https://github.com/seu-usuario/keychain-ERP.git
