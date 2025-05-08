@@ -41,48 +41,34 @@ const BarraLateral = ({ alternarGaveta, estadoGaveta }) => {
             textAlign: 'center', 
             fontFamily: 'Be Vietnam Pro, sans-serif', 
             fontWeight: '100', 
-            color: '#A8A8A8', 
+            color: '#605f5f', 
             marginBottom: '30px',  
             marginTop: '40px' }}>
-            Menu
+            Navegation
           </h2>
 
           <Divider />
 
-          <ListItemButton onClick={alternarGaveta} component={Link} to='/'>
-            <ListItemIcon>
-              <HomeIcon />
-            </ListItemIcon>
-            <ListItemText primary="Home"  primaryTypographyProps={estiloFonte} />
-          </ListItemButton>
 
+          <ListItemButton onClick={alternarGaveta} component={Link} to='' >
+            <ListItemIcon>
+              <BarChartIcon />
+            </ListItemIcon>
+            <ListItemText primary="Dashboard" primaryTypographyProps={estiloFonte} />
+          </ListItemButton>
 
           <ListItemButton onClick={alternarGaveta} component={Link} to='cadastro' >
             <ListItemIcon>
               <PersonAddIcon />
             </ListItemIcon>
-            <ListItemText primary="Cadastrar" primaryTypographyProps={estiloFonte} />
-          </ListItemButton>
-
-          <ListItemButton onClick={alternarGaveta} component={Link} to='clientes'>
-            <ListItemIcon>
-              <HowToRegIcon />
-            </ListItemIcon>
-            <ListItemText primary="Clientes" primaryTypographyProps={estiloFonte} />
+            <ListItemText primary="Cadastrar Cliente" primaryTypographyProps={estiloFonte} />
           </ListItemButton>
 
           <ListItemButton onClick={alternarGaveta} component={Link} to='pedidos'>
             <ListItemIcon>
               <ContentPasteIcon />
             </ListItemIcon>
-            <ListItemText primary="Pedidos Cliente" primaryTypographyProps={estiloFonte} />
-          </ListItemButton>
-
-          <ListItemButton onClick={alternarGaveta} component={Link} to='dashboard' >
-            <ListItemIcon>
-              <BarChartIcon />
-            </ListItemIcon>
-            <ListItemText primary="Dashboard" primaryTypographyProps={estiloFonte} />
+            <ListItemText primary="Cadastrar Pedido" primaryTypographyProps={estiloFonte} />
           </ListItemButton>
 
           <ListItemButton onClick={alternarGaveta} component={Link} to='estoque' >
@@ -91,6 +77,18 @@ const BarraLateral = ({ alternarGaveta, estadoGaveta }) => {
             </ListItemIcon>
             <ListItemText primary="Cadastro de Estoque" primaryTypographyProps={estiloFonte} />
           </ListItemButton>
+
+          <ListItemButton onClick={alternarGaveta} component={Link} to='clientes'>
+            <ListItemIcon>
+              <HowToRegIcon />
+            </ListItemIcon>
+            <ListItemText primary="Lista de Clientes" primaryTypographyProps={estiloFonte} />
+          </ListItemButton>
+
+        
+
+      
+         
 
         </div>
 

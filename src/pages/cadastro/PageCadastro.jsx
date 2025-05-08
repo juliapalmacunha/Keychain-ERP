@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, TextField, Button, MenuItem } from "@mui/material";
+import { Box, TextField, Typography, InputLabel, Button, MenuItem } from "@mui/material";
 import iconeAnimado from "/imagens/assistencia-social.gif";
 import useHookCrud from "../../hooks/HookCrud";
 import Rodape from "../../components/Rodape";
@@ -51,105 +51,262 @@ const CadastroProduto = () => {
   ];
 
   return (
+
     <>
+
+
+
+
+
       <Box
+        sx={{
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+          paddingBottom: "40px",
+          marginTop: 13
+        }}
         display="flex"
-        alignItems="center"
+        flexDirection="column"
+        bgcolor="white"
+        width="900px"
+        height="450px"
+        borderRadius="10px"
         justifyContent="center"
-        height="100vh"
-        bgcolor="#f4f7fc"
-        p={3}
-        id="ACHOU"
+        alignItems="center"
+        mx="auto"
+        p={2}
       >
+
+
         <Box
           component="form"
           width="100%"
-          maxWidth="600px"
-          p={4}
+          p={2}
           bgcolor="white"
-          boxShadow={3}
-          borderRadius={6}
           display="flex"
-          flexDirection="column"
-          gap={3}
+          gap={1}
           onSubmit={adicionandoCliente}
         >
-          <TextField
-            label="Nome"
-            variant="outlined"
-            fullWidth
-            size="small"
-            required
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-          />
 
-          <TextField
-            label="Telefone"
-            variant="outlined"
-            fullWidth
-            size="small"
-            required
-            value={telefone}
-            onChange={(e) => setTelefone(e.target.value)}
-          />
-
-          <TextField
-            label="Cidade"
-            variant="outlined"
-            fullWidth
-            size="small"
-            required
-            value={cidade}
-            onChange={(e) => setCidade(e.target.value)}
-            select
+          <Box
+            display="flex"
+            flexDirection="column"
+            width="60%"
+            gap={1}
+            paddingInline={7}
           >
-            {cidadesNordeste.map((cidade) => (
-              <MenuItem key={cidade.nome} value={cidade.nome}>
-                {cidade.nome}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <TextField
-            label="Estado"
-            variant="outlined"
-            fullWidth
-            size="small"
-            required
-            value={estado}
-            onChange={(e) => setEstado(e.target.value)}
-            select
-          >
-            {estadosNordeste.map((estado) => (
-              <MenuItem key={estado.sigla} value={estado.sigla}>
-                {estado.nome}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: "#3f51b5",
-              '&:hover': { backgroundColor: "#2c387e" },
-              mt: 2,
-              fontFamily: "Roboto, sans-serif",
-              textDecoration: "none"
-            }}
-            type="submit"
-            disabled={!nome || !telefone || !cidade || !estado}
-          >
-            Enviar
-          </Button>
-
-          <figure style={{ marginTop: "30px", textAlign: "center" }}>
-            <img
-              style={{ width: "80px", height: "80px" }}
-              src={iconeAnimado}
-              alt="Ícone animado"
+            <InputLabel htmlFor="nome-input" sx={{ color: "#444141", mt: "5px", fontFamily: "Poppins regular", fontSize: 16, display: "flex", justifyContent: "flex-start", alignItems: "flex-start", width: "100%" }}>
+              Nome:
+            </InputLabel>
+            <TextField
+              id="nome-input"
+              fullWidth size="small"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              autoComplete="off"
+              slotProps={{
+                inputLabel: { shrink: false }
+              }}
+              sx={{
+                "& .MuiInputLabel-root": {
+                  color: "black",
+                  fontFamily: "Poppins regular"
+                },
+                "& .MuiOutlinedInput-root": {
+                  bgcolor: "#eaedf4",
+                  "& fieldset": {
+                    borderRadius: 2,
+                    borderWidth: "0",
+                    borderColor: "#b7b4b4",
+                  },
+                }
+              }}
             />
-          </figure>
+
+
+            <InputLabel htmlFor="telefone-input" sx={{ color: "#444141", mt: "5px", fontFamily: "Poppins regular", fontSize: 16, display: "flex", justifyContent: "flex-start", alignItems: "flex-start", width: "100%" }}>
+              Telefone:
+            </InputLabel>
+            <TextField
+              id="telefone-input"
+              fullWidth size="small"
+              value={telefone}
+              onChange={(e) => setTelefone(e.target.value)}
+              autoComplete="off"
+              slotProps={{
+                inputLabel: { shrink: false }
+              }}
+              sx={{
+                "& .MuiInputLabel-root": {
+                  color: "black",
+                  fontFamily: "Poppins regular"
+                },
+                "& .MuiOutlinedInput-root": {
+                  bgcolor: "#eaedf4",
+                  "& fieldset": {
+                    borderRadius: 2,
+                    borderWidth: "0",
+                    borderColor: "#b7b4b4",
+                  },
+                }
+              }}
+            />
+
+
+            <InputLabel htmlFor="cidade-input" sx={{ color: "#444141", mt: "5px", fontFamily: "Poppins regular", fontSize: 16, display: "flex", justifyContent: "flex-start", alignItems: "flex-start", width: "100%" }}>
+              Cidade:
+            </InputLabel>
+            <TextField
+              id="cidade-input"
+              fullWidth size="small"
+              value={cidade}
+              onChange={(e) => setCidade(e.target.value)} autoComplete="off"
+              select
+              slotProps={{
+                inputLabel: { shrink: false }
+              }}
+              sx={{
+                "& .MuiInputLabel-root": {
+                  color: "black",
+                  fontFamily: "Poppins regular"
+                },
+                "& .MuiOutlinedInput-root": {
+                  bgcolor: "#eaedf4",
+                  "& fieldset": {
+                    borderRadius: 2,
+                    borderWidth: "0",
+                    borderColor: "#b7b4b4",
+                  },
+                }
+              }}
+            >
+
+              {cidadesNordeste.map((cidade) => (
+                <MenuItem key={cidade.nome} value={cidade.nome}>
+                  {cidade.nome}
+                </MenuItem>
+              ))}
+            </TextField>
+
+
+            <InputLabel htmlFor="estado-input" sx={{ color: "#444141", mt: "5px", fontFamily: "Poppins regular", fontSize: 16, display: "flex", justifyContent: "flex-start", alignItems: "flex-start", width: "100%" }}>
+              Estado:
+            </InputLabel>
+            <TextField
+              id="estado-input"
+              fullWidth size="small"
+              value={estado}
+              select
+              onChange={(e) => setEstado(e.target.value)}
+              autoComplete="off"
+              slotProps={{
+                inputLabel: { shrink: false }
+              }}
+              sx={{
+                "& .MuiInputLabel-root": {
+                  color: "black",
+                  fontFamily: "Poppins regular"
+                },
+                "& .MuiOutlinedInput-root": {
+                  bgcolor: "white",
+                  bgcolor: "#eaedf4",
+                  "& fieldset": {
+                    borderRadius: 2,
+                    borderWidth: "0",
+                    borderColor: "#b7b4b4",
+                  },
+                }
+              }}
+            >
+
+              {estadosNordeste.map((estado) => (
+                <MenuItem key={estado.sigla} value={estado.sigla}>
+                  {estado.nome}
+                </MenuItem>
+              ))}
+
+            </TextField>
+
+
+
+
+
+
+            <Button
+              variant="contained"
+              sx={{
+                mt: 3,
+                '&.Mui-disabled': {
+                  bgcolor: "#3441b1",
+                  color: "#ffffff",
+                  fontFamily: "Poppins semibold",
+                  fontSize: 16,
+                  pointerEvents: "auto",
+                  '&:hover': { bgcolor: '#2b305c' },
+                  width: "100%",
+                  borderRadius: "5px"
+                }
+              }}
+              type="submit"
+              disabled={!nome || !telefone || !cidade || !estado}
+            >
+              Enviar
+            </Button>
+
+          </Box>
+
+
+          <div style={{
+            width: '4.5px',
+            height: '100%',
+            backgroundColor: "#f7f7f7",
+            borderRadius: '10px',
+            margin: '100',
+
+          }} />
+
+
+          <Box     
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexDirection: "column",
+            textAlign: "center",
+            gap: "60px"
+
+          }}
+          >
+
+            <Box
+              sx={{
+                textAlign: "left",
+                height: "80px",
+                width: "60%",
+                bgcolor: '#d2d8ef',
+                p: 4,
+                borderRadius: "10px",
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                gap: 1.5,
+              }}
+            >
+              <Typography sx={{ fontFamily: 'Poppins semibold', fontSize: 22, color: '#3441b1' }}>
+               Cadastro de Cliente
+              </Typography>
+              <Typography sx={{ fontFamily: 'Poppins regular', fontSize: 16, color: '#2d2d2f' }}>
+              Use nomes completos e padronizados para facilitar buscas futuras.
+              </Typography>
+            </Box>
+            <figure style={{ margin: "auto" }}>
+              <img
+                style={{ width: "80px", height: "80px" }}
+                src={iconeAnimado}
+                alt="Ícone animado"
+              />
+            </figure>
+          </Box>
+
         </Box>
 
 
@@ -159,7 +316,7 @@ const CadastroProduto = () => {
         <p>Fale conosco | Termos de uso | Segurança e privacidade</p>
       </Rodape>
 
-      
+
     </>
   );
 };

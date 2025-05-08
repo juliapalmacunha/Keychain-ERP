@@ -1,14 +1,15 @@
 import { useContext, useState } from "react";
 import { ClientesContext } from "../contextos/ClientesContext";
 import { getDocs, collection, doc, updateDoc, addDoc, deleteDoc, query, where, getDoc, setDoc } from "firebase/firestore";
-import { db } from "../Firebase/firebaseConfig"; // ajuste o caminho do Firebase conforme necessário
+import { db } from "../Firebase/firebaseConfig";
+import { toast } from 'react-toastify';
 
 // Hook personalizado com funcionalidades CRUD
 export default function useHookCrud() {
 
 
 
-    const { clientes, setClientes, pesquisaFiltrada, setPesquisaFiltrada, pedidosDoCliente, setPedidosDoCliente } = useContext(ClientesContext);
+    const { clientes, setClientes, pesquisaFiltrada, setPesquisaFiltrada, pesquisaFiltradaProduto, setPesquisaFiltradaProduto, setPedidosDoCliente, setVendasTotais, setFaturamento, setPedidosFiltrados, setPedidosAcumulados, pedidosAcumulados, setEstoqueTotal, setPizza } = useContext(ClientesContext);
 
 
 
@@ -22,7 +23,7 @@ export default function useHookCrud() {
             }));
 
             setClientes(dadosCliente);
-            
+
 
         } catch (error) {
             console.error("Erro ao buscar os dados:", error);
@@ -46,12 +47,12 @@ export default function useHookCrud() {
 
             await updateDoc(IdCliente, novosDados);
 
-            alert("Cliente atualizado com sucesso!");
+            toast.success("Cliente atualizado com sucesso!");
             buscarClientes();
 
         } catch {
             console.error("Erro ao atualizar cliente");
-            alert("Erro ao atualizar cliente");
+            toast.error("Erro ao atualizar cliente");
         }
     };
 
@@ -70,11 +71,11 @@ export default function useHookCrud() {
                 estado,
             });
 
-            alert("Cliente cadastrado com sucesso!");
+            toast.success("Cliente cadastrado com sucesso!");
 
         } catch (e) {
             console.error("Erro ao enviar dados", e.message);
-            alert(`Erro ao cadastrar cliente: ${e.message}`);
+            toast.error(`Erro ao cadastrar cliente: ${e.message}`);
         }
     };
 
@@ -99,17 +100,17 @@ export default function useHookCrud() {
 
             buscarClientes();
 
-            alert("Cliente e seus pedidos foram deletados com sucesso!");
+            toast.success("Cliente e seus pedidos foram deletados com sucesso!");
 
         } catch (error) {
             console.error("Erro ao deletar cliente:", error);
-            alert("Erro ao deletar cliente!");
+            toast.error("Erro ao deletar cliente!");
         }
     };
 
 
     //DELETAR PEDIDO ESPECIFICO DO CLIENTE
-    const deletarPedido = async(idDoCliente, idDoPedido) => {
+    const deletarPedido = async (idDoCliente, idDoPedido) => {
 
 
         try {
@@ -119,14 +120,10 @@ export default function useHookCrud() {
             const pedidosRef = doc(clienteRef, "pedidos", idDoPedido);
 
             await deleteDoc(pedidosRef);
-            console.log("Pedido deletado com sucesso")
-        }catch (error) {
-            console.error("Erro ao deletar pedido:", error)
+            toast.success("Pedido deletado com sucesso")
+        } catch (error) {
+            toast.error("Erro ao deletar pedido:", error)
         }
-
-
-
-
     }
 
 
@@ -166,6 +163,7 @@ export default function useHookCrud() {
 
             setPesquisaFiltrada(filtrandoPesquisa)
 
+
         } catch (error) {
             console.error("Erro ao buscar clientes por nome:", error);
             setPesquisaFiltrada([])
@@ -177,43 +175,99 @@ export default function useHookCrud() {
 
 
 
-
-
-    //ENVIANDO PEDIDO PARA UMA SUBCOLEÇÃO CRIADA DE ACORDO COM O CLIENTE
-    const enviarPedidoCliente = async (produto, quantidade, id) => {
+    //PROCURANDO O PRODUTO DO ESTOQUE POR NOME 
+    const buscarProdutoNoEstoquePorNome = async (pesquisa) => {
 
         try {
-            
-            const clienteRef = doc(db, 'clientes', id);
-            const clienteDoc = await getDoc(clienteRef);
 
-            if (!clienteDoc.exists()) {
-                alert('Cliente não encontrado');
+            if (!pesquisa.trim()) {
+                setPesquisaFiltradaProduto([]);
                 return;
             }
 
-            
-            const pedidosRef = collection(clienteRef, 'pedidos');
-            const precoUnitario = 1.50;
+            const pesquisaFormatada = capitalizarPrimeiraLetra(pesquisa.trim());
 
-           
-            const pedido = {
-                produto,
-                quantidade,
-                data: new Date().toLocaleDateString('pt-BR').split('/').reverse().join('-'),
-                preco: (quantidade * precoUnitario).toLocaleString('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                }) 
-            };
+            const q = query(
+                collection(db, "estoque"),
+                where("produto", ">=", pesquisaFormatada),
+                where("produto", "<=", pesquisaFormatada + "\uf8ff")
+            );
 
-        
-            await addDoc(pedidosRef, pedido);
-            alert('Pedido cadastrado');
+            const resultado = await getDocs(q)
+            const filtrandoPesquisa = resultado.docs.map((produto) => ({
+                id: produto.id,
+                ...produto.data(),
+            }))
+
+
+
+            setPesquisaFiltradaProduto(filtrandoPesquisa)
 
         } catch (error) {
+            console.error("Erro ao buscar produto no estoque por nome:", error);
+            setPesquisaFiltradaProduto([])
+
+        }
+
+    }
+
+
+
+
+    //ENVIANDO PEDIDO PARA UMA SUBCOLEÇÃO CRIADA DE ACORDO COM O CLIENTE, E SUBTRAINDO DO ESTOQUE
+    const enviarPedidoCliente = async (produto, quantidade, id) => {
+        try {
+
+            const q = query(
+                collection(db, "estoque"),
+                where("produto", "==", produto)
+            );
+
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                querySnapshot.forEach(async (documento) => {
+                    const produtoDocRef = documento.ref;
+                    const produtoData = documento.data();
+
+
+                    if (produtoData.quantidade >= Number(quantidade)) {
+                        const novaQuantidade = Number(produtoData.quantidade) - Number(quantidade);
+                        await updateDoc(produtoDocRef, { quantidade: novaQuantidade });
+
+                        const clienteRef = doc(db, 'clientes', id);
+                        const clienteDoc = await getDoc(clienteRef);
+
+                        if (!clienteDoc.exists()) {
+                            toast.error('Cliente não encontrado');
+                            return;
+                        }
+
+                        const pedidosRef = collection(clienteRef, 'pedidos');
+                        const precoUnitario = 1.50;
+
+                        const pedido = {
+                            produto,
+                            quantidade,
+                            data: new Date().toLocaleDateString('pt-BR').split('/').reverse().join('-'),
+                            preco: (quantidade * precoUnitario).toLocaleString('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL'
+                            })
+                        };
+
+                        await addDoc(pedidosRef, pedido);
+                        toast.success('Pedido cadastrado com sucesso');
+                    } else {
+                        toast.warn(`Quantidade insuficiente no estoque. Apenas ${produtoData.quantidade} unidades disponíveis.`);
+                    }
+                });
+            } else {
+                toast.warn('Produto não encontrado no estoque');
+            }
+        } catch (error) {
             console.error('Erro ao cadastrar o pedido: ', error);
-            alert('Erro ao cadastrar o pedido');
+            toast.error('Erro ao cadastrar o pedido');
         }
     };
 
@@ -222,22 +276,17 @@ export default function useHookCrud() {
     ///BUSCANDO OS PEDIDOS DO CLIENTE
     const acessarPedidosCliente = async (id) => {
         try {
-            
+
             const clienteRef = doc(db, "clientes", id);
-            
-           
             const pedidosRef = collection(clienteRef, "pedidos");
-            
-          
             const pedidosSnapshot = await getDocs(pedidosRef);
-    
-           
+
             const pedidos = pedidosSnapshot.docs.map((doc) => ({
                 id: doc.id,
                 ...doc.data(),
             }));
+
             setPedidosDoCliente(pedidos)
-            
             return pedidos;
         } catch (error) {
             console.error("Erro ao acessar pedidos do cliente:", error);
@@ -246,8 +295,169 @@ export default function useHookCrud() {
 
 
 
-    
-    
+
+    //ADICIONAR PRODUTO AO ESTOQUE VIA FIRESTORE
+    const adicionarProdutoEstoque = async (produto, quantidade) => {
+        try {
+
+            const q = query(
+                collection(db, "estoque"),
+                where("produto", "==", produto)
+            );
+
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                querySnapshot.forEach(async (doc) => {
+                    const produtoDocRef = doc.ref;
+                    const produtoData = doc.data();
+                    const novaQuantidade = Number(produtoData.quantidade) + Number(quantidade);
+
+                    await updateDoc(produtoDocRef, { quantidade: novaQuantidade });
+
+                    toast.info("Quantidade atualizada no estoque!");
+                });
+            } else {
+
+                await addDoc(collection(db, "estoque"), {
+                    produto,
+                    quantidade: quantidade
+                });
+
+                toast.success("Produto cadastrado no estoque com sucesso!");
+            }
+
+        } catch (e) {
+            console.error("Erro ao enviar dados", e.message);
+            toast.error(`Erro ao cadastrar ou atualizar produto no estoque: ${e.message}`);
+        }
+    };
+
+
+
+
+    //CALCULO DO TOTAL DE ITENS VENDIDOS
+    const mostraVendaTotal = async () => {
+        const novoDadosGrafico = await Promise.all(
+            clientes.map(async (cliente) => {
+                const pedidosDoCliente = await acessarPedidosCliente(cliente.id);
+                return pedidosDoCliente.reduce((acumulador, pedido) => {
+                    return acumulador + Number(pedido.quantidade);
+                }, 0);
+            })
+        );
+
+        const somaTotal = novoDadosGrafico.reduce((acumulador, valor) => acumulador + valor, 0);
+        return setVendasTotais(somaTotal);
+
+    };
+
+
+
+
+    //CALCULO DE FATURAMENTO TOTAL
+    const mostraFaturamentoTotal = async () => {
+
+        const novoDadosGrafico = await Promise.all(
+            clientes.map(async (cliente) => {
+                const pedidosDoCliente = await acessarPedidosCliente(cliente.id);
+                return pedidosDoCliente.reduce((acumulador, pedido) => {
+                    const precoNumerico = parseFloat(pedido.preco.replace(/[R$\s.]/g, "").replace(",", "."));
+                    return acumulador + precoNumerico;
+                }, 0);
+            })
+        );
+
+        const somaTotal = novoDadosGrafico.reduce((acumulador, valor) => acumulador + valor, 0);
+        return setFaturamento(
+            somaTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+        );
+    };
+
+
+
+    //CALCULO DE ITENS MAIS VENDIDOS DE FORMA ACUMULADA, PREPARANDO...
+    const mostraItensMaisVendido = async () => {
+
+        const provisoria = [];
+
+        const listaDeItensTemp = await Promise.all(
+            clientes.map(async (cliente) => {
+                const pedidosDeUmCliente = await acessarPedidosCliente(cliente.id);
+                return pedidosDeUmCliente.map((pedido) => ({
+                    produto: pedido.produto,
+                    quantidade: pedido.quantidade
+                }));
+            })
+        );
+
+        provisoria.push(...listaDeItensTemp.flat());
+
+        const itensAgrupados = provisoria.reduce((acumulado, item) => {
+            if (acumulado[item.produto]) {
+                acumulado[item.produto] += Number(item.quantidade);
+            } else {
+                acumulado[item.produto] = Number(item.quantidade);
+            }
+            return acumulado;
+        }, {});
+
+        const listaFinal = Object.entries(itensAgrupados).map(([produto, quantidade]) => ({
+            produto,
+            quantidade
+        }));
+
+        setPedidosAcumulados(listaFinal);
+    };
+
+
+    //CALCULO DOS 10 ITENS MAIS VENDIDOS
+    const primeirosDezItensMaisVendidos = () => {
+        const totalDeItensVendidosOrdemCrescente = pedidosAcumulados
+          .sort((a, b) => b.quantidade - a.quantidade);
+       
+        const top10 = totalDeItensVendidosOrdemCrescente.slice(0, 10);
+      
+        const novoArray = top10.map((item, index) => {
+          return {
+            id: index,
+            value: item.quantidade,
+            label: item.produto
+          };
+        });
+      
+        setPizza(novoArray);
+      };
+
+
+      //CALCULO DA QUANTIDADE TOTAL NO ESTOQUE 
+      const buscaQuantidadeTotalNoEstoqueUmDeCada = async() => {
+
+        try {
+
+            const buscandoDadosEstoque = await getDocs(collection(db, "estoque"));
+            const dadosEstoque = buscandoDadosEstoque.docs.map((produto) => ({
+                id: produto.id,
+                ...produto.data(),
+            }));
+            setEstoqueTotal(dadosEstoque)
+        }catch (e) {
+            console.error("Erro ao enviar dados", e.message);
+           
+        }
+        
+      }
+      
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -265,5 +475,24 @@ export default function useHookCrud() {
         setPesquisaFiltrada,
         clientes,
         setClientes,
+        mostraVendaTotal,
+        mostraFaturamentoTotal,
+        adicionarProdutoEstoque,
+        buscarProdutoNoEstoquePorNome,
+        mostraItensMaisVendido,
+        primeirosDezItensMaisVendidos,
+        buscaQuantidadeTotalNoEstoqueUmDeCada
+        
     };
+
+
+
+
+
+
 }
+
+
+
+
+

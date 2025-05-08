@@ -5,16 +5,16 @@ const Rodape = ({children}) => {
   return (
     
     <Box  
+    marginTop="40px"
     sx={{
-      backgroundColor: "#f4f7fc",
+      backgroundColor: "#f2f5fa",
       width: '100%',
-      height:"70px",
       color: 'white',
       display:"flex",
-      textAlign: 'center',
+      textAlign: 'center'
     }}
     >
-     <Typography variant='h2' fontSize="16px" sx={{margin:"auto",fontFamily:"Gilroy light", color: "gray"}}>
+     <Typography variant='h2' fontSize="14px" sx={{margin:"auto",fontFamily:"Poppins regular", color: "gray"}}>
         {children}
       </Typography>
     </Box>

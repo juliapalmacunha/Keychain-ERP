@@ -99,10 +99,6 @@ const Clientes = () => {
   const navigate = useNavigate();
 
 
- 
-
-
-
 
   return (
     <TableContainer sx={{marginTop: "64px"}}>

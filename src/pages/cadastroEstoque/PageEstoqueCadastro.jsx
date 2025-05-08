@@ -1,45 +1,54 @@
 import React, { useContext, useState } from "react";
-import { Box, TextField, Button, MenuItem, Paper, List, ListItem, ListItemText, Grid, Typography } from "@mui/material";
+import { Box, TextField, Button, MenuItem, InputLabel, Paper, List, ListItem, ListItemText, Grid, Typography } from "@mui/material";
 import useHookCrud from "../../hooks/HookCrud";
+import { ClientesContext } from "../../contextos/ClientesContext";
+import { pink } from "@mui/material/colors";
 
 
 const PageEstoqueCadastro = () => {
 
-  const { buscarClientePorNome, enviarPedidoCliente, acessarPedidosCliente, pesquisaFiltrada, setPesquisaFiltrada } = useHookCrud();
+  const { adicionarProdutoEstoque } = useHookCrud();
 
-  const [pesquisaCliente, setPesquisaCliente] = useState("");
-  const [produto, setProduto] = useState("");
-  const [quantidade, setQuantidade] = useState("");
-  const [idCliente, setIdCliente] = useState("");
+
+  const [quantidadeEstoque, setQuantidadeEstoque] = useState("");
+  const [produtoEstoque, setProdutoEstoque] = useState("")
+
+  
+
+
 
   const TiposDeProdutos = [
-    { nome: "Chaveiros Times", id: 1 },
-    { nome: "Chaveiros Letras", id: 2 },
-    { nome: "Abridores", id: 3 },
+    ...[
+      "Flamengo", "Palmeiras", "São Paulo", "Corinthians", "Santos",
+      "Grêmio", "Internacional", "Cruzeiro", "Atlético Mineiro", "Vasco",
+      "Fluminense", "Botafogo", "Bahia", "Sport", "Fortaleza", "Ceará",
+      "Vitória", "America", "ABC"
+    ].map((time, index) => ({
+      nome: `${time} Chaveiro`,
+      id: 100 + index
+    })),
+
+    ...Array.from({ length: 26 }, (_, i) => ({
+      nome: `${String.fromCharCode(65 + i)} Letra Feminina`,
+      id: 200 + i * 2
+    })),
+
+    ...Array.from({ length: 26 }, (_, i) => ({
+      nome: `${String.fromCharCode(65 + i)} Letra Masculina`,
+      id: 201 + i * 2
+    }))
   ];
 
-  const buscandoClientePorNome = (e) => {
-    setPesquisaCliente(e.target.value);
-    buscarClientePorNome(e.target.value);
-  };
-
-  const preenchendoInput = (nomeCliente, idCliente) => {
-    setIdCliente(idCliente);
-    setPesquisaCliente(nomeCliente);
-    setPesquisaFiltrada([]);
-  };
 
 
   const enviandoPedidoCliente = (evento) => {
     evento.preventDefault();
-    enviarPedidoCliente(produto, quantidade, idCliente);
-    acessarPedidosCliente(idCliente);
+    adicionarProdutoEstoque(produtoEstoque, quantidadeEstoque)
+    setProdutoEstoque("");
+    setQuantidadeEstoque("");
 
-    setPesquisaCliente("");
-    setProduto("");
-    setQuantidade("");
-    setIdCliente("");
   };
+
 
 
 
@@ -47,36 +56,189 @@ const PageEstoqueCadastro = () => {
 
     <>
 
-      
 
+<Box
+  sx={{
+    minHeight: '100vh',
+    bgcolor: '#f2f2f2',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    px: 2,
+  }}
+>
+  <Box
+    sx={{
+      display: 'flex',
+      flexDirection: { xs: 'column', md: 'row' },
+      width: '100%',
+      maxWidth: 900,
+      bgcolor: '#ffffff',
+      boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+      borderRadius: '10px',
+      overflow: 'hidden',
+      transition: 'all 0.3s ease-in-out',
+    }}
+  >
+  
+    <Box
+      sx={{
+        flex: 1,
+        bgcolor: '#d2d8ef',
+        p: 4,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        gap: 2,
+      }}
+    >
+      <Typography sx={{ fontFamily: 'Poppins semibold', fontSize: 24, color: '#3441b1' }}>
+        Sistema de Estoque
+      </Typography>
+      <Typography sx={{ fontFamily: 'Poppins regular', fontSize: 16, color: '#2d2d2f' }}>
+        Cadastre os produtos disponíveis com facilidade e mantenha o controle de entradas.
+      </Typography>
+     
+    </Box>
 
+  
+    <Box
+      component="form"
+      onSubmit={enviandoPedidoCliente}
+      sx={{
+        flex: 1,
+        p: 6,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        gap: 2,
+      }}
+    >
+      <Typography
+        sx={{
+          fontFamily: 'Poppins semibold',
+          fontSize: 22,
+          color: '#2d2d2f',
+          mb: 2,
+        }}
+      >
+        Cadastro de <span style={{ color: '#3441b1' }}>Produto</span>
+      </Typography>
+
+      <InputLabel
+        htmlFor="produtoEstoque-input"
+        sx={{
+          color: '#2d2d2f',
+          fontFamily: 'Poppins regular',
+          fontSize: 16,
         
-        <Box sx={{width: 350, mx: "auto", mt: 5, p: 3, borderRadius: 4, boxShadow: 3, bgcolor: "#f5f5f5", marginTop: "250px" }} component="form" onSubmit={enviandoPedidoCliente}>
-        <Typography sx={{
-          color: "black",
-          fontFamily: "Gilroy semibold",
-          fontWeight: "16px"
-        }}>Cadastro de Produtos:</Typography>
+        
+        }}
+      >
+        Produto:
+      </InputLabel>
+      <TextField
+        id="produtoEstoque-input"
+        fullWidth
+        size="small"
+        value={produtoEstoque}
+        onChange={(e) => setProdutoEstoque(e.target.value)}
+        placeholder="Selecione o produto"
+        select
+        SelectProps={{
+          MenuProps: {
+            PaperProps: { style: { maxHeight: 250 } },
+          },
+        }}
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            bgcolor: "#f9f9f9",
+            "& fieldset": {
+              borderColor: "#c4c4c4",
+              borderRadius: 2,
+              borderWidth: "1.5px",
+            },
+            "&:hover fieldset": {
+              borderColor: "#3441b1",
+            },
+            "&.Mui-focused fieldset": {
+              borderColor: "#3441b1",
+            },
+          },
+        }}
+      >
+        {TiposDeProdutos.map(({ id, nome }) => (
+          <MenuItem key={id} value={nome}>
+            {nome}
+          </MenuItem>
+        ))}
+      </TextField>
 
-          <TextField label="Produto" fullWidth size="small" select value={produto} onChange={(e) => setProduto(e.target.value)} sx={{ mt: 2 }} required>
-            {TiposDeProdutos.map(({ id, nome }) => (
-              <MenuItem key={id} value={nome}>{nome}</MenuItem>
-            ))}
-          </TextField>
-          <TextField label="Quantidade" type="number" fullWidth size="small" value={quantidade} onChange={(e) => setQuantidade(e.target.value)} sx={{ mt: 2 }} placeholder="Quantidade" />
-          <Button variant="contained" type="submit" sx={{ mt: 3, bgcolor: "#043b71", ':hover': { bgcolor: '#03254c' } }} disabled={!pesquisaCliente || !produto || !quantidade}>
-            Enviar
-          </Button>
-        </Box>
+      <InputLabel
+        htmlFor="quantidade-input"
+        sx={{
+          color: '#2d2d2f',
+          fontFamily: 'Poppins regular',
+          fontSize: 16,
+        }}
+      >
+        Quantidade:
+      </InputLabel>
+      <TextField
+        id="quantidade-input"
+        fullWidth
+        size="small"
+        value={quantidadeEstoque}
+        onChange={(e) => setQuantidadeEstoque(e.target.value)}
+        placeholder="Digite a quantidade"
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            bgcolor: "#f9f9f9",
+            "& fieldset": {
+              borderColor: "#c4c4c4",
+              borderRadius: 2,
+              borderWidth: "1.5px",
+            },
+            "&:hover fieldset": {
+              borderColor: "#3441b1",
+            },
+            "&.Mui-focused fieldset": {
+              borderColor: "#3441b1",
+            },
+          },
+        }}
+      />
+
+      <Button
+        variant="contained"
+        type="submit"
+        disabled={!produtoEstoque || !quantidadeEstoque}
+        sx={{
+          height: 40,
+          mt: 2,
+          py: 1.5,
+          fontFamily: 'Poppins semibold',
+          fontSize: 16,
+          borderRadius: 2,
+          textTransform: 'none',
+          bgcolor: '#3441b1',
+          '&:hover': {
+            bgcolor: '#2b359c',
+          },
+          '&.Mui-disabled': {
+            bgcolor: "#bfc3dc",
+            color: "#fff",
+          },
+        }}
+      >
+        Enviar
+      </Button>
+    </Box>
+  </Box>
+</Box>
 
 
-      
 
-
-
-
-
-    
 
     </>
 

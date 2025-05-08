@@ -24,6 +24,7 @@ const LayoutPrincipal = ({ children }) => {
       <Cabecalho alternarGaveta={alternarGaveta}/>
 
       <Box id="ENGLOBAPAGES" sx={{ flex: "1" }} >{children}</Box>
+      
 
       
 

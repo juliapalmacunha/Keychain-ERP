@@ -29,6 +29,29 @@
   src: url(assets/fontes/Gilroy-SemiBold.ttf);
 }
 
+@font-face {
+  font-family: "Roboto semibold";
+  src: url(assets/fontes/Roboto-SemiBold.ttf);
+}
+
+@font-face {
+  font-family: "Poppins semibold";
+  src: url(assets/fontes/Poppins-SemiBold.ttf);
+}
+
+@font-face {
+  font-family: "Poppins regular";
+  src: url(assets/fontes/Poppins-Regular.ttf);
+}
+
+
+@font-face {
+  font-family: "Roboto regular";
+  src: url(assets/fontes/Roboto-Regular.ttf);
+}
+
+
+
 body {
   margin: 0 0 0 0 ;
   padding: 0;
@@ -37,7 +60,7 @@ body {
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
-    background-color: #ffffff;
+    background-color: #f2f5fa;
   }
   a:hover {
     color: #747bff;

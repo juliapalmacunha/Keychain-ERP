@@ -1,16 +1,9 @@
-import React, { useState, useEffect, useContext, useRef } from "react";
-import { Bar, Line } from "react-chartjs-2";
+import React, { useState, useEffect, useContext, useRef, useMemo } from "react";
+import 'leaflet/dist/leaflet.css';
 import {
   Box,
-  Card,
-  Button,
-  Typography,
+  CircularProgress,
   Grid,
-  Grid2,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem
 } from "@mui/material";
 import {
   Chart as ChartJS,
@@ -24,29 +17,40 @@ import {
   LineElement,
   Filler
 } from "chart.js";
-import { Chart } from "chart.js/auto";
 import { ClientesContext } from "../../contextos/ClientesContext";
 import useHookCrud from "../../hooks/HookCrud";
-import { Link } from "react-router-dom";
 import DivKpis from "../../components/DivKpis";
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import RedeemIcon from '@mui/icons-material/Redeem';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import useHookGrafico from "../../hooks/HookGraficos";
+import GraficoLinha from "../../components/graficos/GraficoLinha";
+import GraficoPizza from "../../components/graficos/GraficoPizza";
+import GraficoBarraQuant from "../../components/graficos/GraficoBarraQuant";
+import GraficoBarraProdutos from "../../components/graficos/GraficoBarraProdutos";
+import useHookUtils from "../../hooks/HookUtils";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Filler, Title, Tooltip, Legend);
 
 const Dashboard = () => {
 
 
-  const { buscarClientes, acessarPedidosCliente } = useHookCrud();
-  const { clientes, faturamento, setFaturamento } = useContext(ClientesContext);
+  const { buscarClientes, mostraVendaTotal, mostraFaturamentoTotal, mostraItensMaisVendido, primeirosDezItensMaisVendidos, buscaQuantidadeTotalNoEstoqueUmDeCada } = useHookCrud();
+  const { atualizarGraficoBarraVertical, atualizarGraficoLine, atualizarGraficoBarraVerticalEstoqueUmDeCada } = useHookGrafico()
+  const {calculandoValorTotalEstoque, calculandoTicketMedio} = useHookUtils()
+  const { clientes, vendasTotais, ticketMedio, faturamento, estoqueTotal, pedidosAcumulados, pizza, quantEstoqueTotal } = useContext(ClientesContext);
 
-  const [clienteDaVez, setClienteDaVez] = useState("");
-  const [idDaVez, setIdDaVez] = useState("");
+
+  const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState("quantidade");
 
+  const trocarFiltroGraficoBarraQuant = (event) => {
+    setFiltro(event.target.value);
+  };
+
   const barChartRef = useRef(null);
+  const barChartRefEstoqueUmDeCada = useRef(null);
   const lineChartRef = useRef(null);
 
 
@@ -78,356 +82,208 @@ const Dashboard = () => {
 
 
   const indicadores = [
-    { nome: "Vendas Totais", valor: 0, icone: ShoppingCartIcon },
-    { nome: "Item mais vendido", valor: 0, icone: RedeemIcon },
-    { nome: "Estoque Total", valor: 0, icone: InventoryIcon },
+    { nome: "Vendas Totais", valor: vendasTotais, icone: ShoppingCartIcon },
+    { nome: "Ticket medio", valor: !isNaN(ticketMedio)
+      ? ticketMedio.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+      : "R$ 0,00", icone: RedeemIcon },
+    { nome: "Quantidade no Estoque", valor: quantEstoqueTotal, icone: InventoryIcon },
     { nome: "Faturamento", valor: faturamento, icone: MonetizationOnIcon }
   ]
 
 
 
-  //CONFIGURAÇÕES GRAFICO BARRA
+  // CONFIGURAÇOES GRAFICO BARRA
   const [chartDataBarra, setChartDataBarra] = useState({
     labels: [],
-    datasets: [{ label: "", data: [], backgroundColor: "#4ee2b5" }],
+    datasets: [{ label: "", data: [] }],
   });
 
   const optionsBarras = {
     responsive: true,
     plugins: {
-      legend: { position: "top", labels: { color: "#fff" } },
+      legend: { position: "top", labels: { color: "black" } },
     },
     scales: {
-      x: { ticks: { color: "#fff" } },
-      y: { ticks: { color: "#fff" } },
+      x: { ticks: { color: "gray" } },
+      y: { ticks: { color: "gray" } },
     },
   };
 
+
+  //GRADIENTE GRAFICO BARRA ESTOQUE
+  const criarGradienteBarraEstoqueUmDeCada = (context) => {
+    const chart = context.chart;
+    const { ctx, chartArea } = chart;
+    if (!chartArea) return null;
+
+    const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+    gradient.addColorStop(0, "#4b0082");
+    gradient.addColorStop(1, "rgba(167, 6, 207, 0.77)");
+    return gradient;
+  };
+
+
+
+  // CONFIGURAÇOES GRAFICO BARRA ESTOQUE
+  const [chartDataBarraEstoqueUmDeCada, setChartDataBarraEstoqueUmDeCada] = useState({
+    labels: [],
+    datasets: [{ label: "", data: [] }],
+  });
+
+  const optionsBarrasEstoque = {
+    responsive: true,
+    plugins: {
+      legend: { position: "top", labels: { color: "black" } },
+    },
+    scales: {
+      x: { ticks: { color: "gray" } },
+      y: { ticks: { color: "gray" } },
+    },
+  };
+
+
+  //GRADIENTE DEGRADE GRAFICO LINHA
+  const criarGradienteLine = (context) => {
+    const chart = context.chart;
+    const { ctx, chartArea } = chart;
+    if (!chartArea) return null;
+
+    const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+    gradient.addColorStop(0, "#16046a");
+    gradient.addColorStop(1, "rgba(81, 108, 241, 0.511)");
+    return gradient;
+  };
+
+
+  // CONFIGURAÇÕES GRAFICO LINHA
   const [lineChartData, setLineChartData] = useState({
-    labels: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+    labels: [
+      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+    ],
     datasets: [
       {
         label: "Vendas por Mês",
         data: [],
-        borderColor: "#4ee2b5",
-        backgroundColor: "rgba(78, 226, 181, 0.2)",
+        borderColor: "#00BFFF",
+        backgroundColor: criarGradienteLine,
         tension: 0.4,
         fill: true,
-        pointBackgroundColor: "#4ee2b5",
+        pointBackgroundColor: "#00BFFF",
+        pointBorderColor: "#ffffff",
       },
     ],
   });
 
 
-  //CONFIGURAÇÕES GRAFICO LINHA
   const optionsLine = {
     responsive: true,
     plugins: {
-      legend: { position: "top", labels: { color: "#fff" } },
-      title: { display: true, text: "Vendas ao Longo do Tempo", color: "#fff" },
+      legend: { position: "top", labels: { color: "black" } },
     },
     scales: {
-      x: { ticks: { color: "#fff" }, grid: { color: "rgba(255, 255, 255, 0.1)" } },
-      y: { ticks: { color: "#fff" }, grid: { color: "rgba(255, 255, 255, 0.1)" } },
+      x: { ticks: { color: "gray" }, grid: { color: "rgba(255, 255, 255, 0.1)" } },
+      y: { ticks: { color: "gray" }, grid: { color: "rgba(255, 255, 255, 0.1)" } },
     },
   };
 
 
-  const handleChange = (event) => {
-    setFiltro(event.target.value);
-  };
+  const memorizedLineChartData = useMemo(() => lineChartData, [lineChartData]);
+  const memorizedBarChartData = useMemo(() => chartDataBarra, [chartDataBarra]);
+  const memorizedBarChartDataEstoqueUmDeCada = useMemo(() => chartDataBarraEstoqueUmDeCada, [chartDataBarraEstoqueUmDeCada]);
 
-  const buscarClientesHandler = (id, nome) => {
-    setClienteDaVez(nome);
-    setIdDaVez(id);
-  };
+
+
+  useMemo(() => {
+    calculandoTicketMedio()
+  }, [vendasTotais, faturamento]);
+
+  useMemo(() => {
+    calculandoValorTotalEstoque();
+  }, [estoqueTotal]);
 
 
   useEffect(() => {
-    buscarClientes();
-    console.log("BUSCANDO CLIENTES...");
+    atualizarGraficoBarraVertical({ filtro, setChartDataBarra });
+  }, [clientes, filtro]);
 
+  useEffect(() => {
+    atualizarGraficoBarraVerticalEstoqueUmDeCada(setChartDataBarraEstoqueUmDeCada, criarGradienteBarraEstoqueUmDeCada);
+    primeirosDezItensMaisVendidos()
+  }, [pedidosAcumulados]);
+
+
+  useEffect(() => {
+    atualizarGraficoLine(meses, setMeses, setLineChartData, criarGradienteLine);
+    mostraVendaTotal();
+    mostraFaturamentoTotal()
+    mostraItensMaisVendido()
+  }, [clientes]);
+
+
+  useEffect(() => {
+    const loadData = async () => {
+      await buscarClientes();
+      await  buscaQuantidadeTotalNoEstoqueUmDeCada();
+      setLoading(false);
+    };
+    loadData();
   }, []);
 
 
-  //MUDA DE ACORDO COM A QUANTIDADE DE CLIENTES, POIS ASSIM QUE A PAGINA CARREGA, O BUSCAR CLIENTES ACONTECE ASSIM MUDANDO O VALOR DE CLIENTES E OBRIGANDO O CARREGAMENTO DO GRAFICO COM OS NOVOS DADOS DE CLIENTES
-  useEffect(() => {
-    atualizarGraficoBarraLateral()
-    atualizarGraficoLine()
-
-  }, [clientes])
-
-
-  useEffect(() => {
-    atualizarGrafico()
-  }, [clientes, filtro])
-
-
-
-
-  //ATUALIZANDO GRAFICO BARRA
-  const atualizarGrafico = async () => {
-    const novoDadosGrafico = await Promise.all(
-      clientes.map(async (cliente) => {
-        const pedidosDoCliente = await acessarPedidosCliente(cliente.id);
-        return pedidosDoCliente.reduce((acumulador, pedido) => {
-          if (filtro === "quantidade") return acumulador + Number(pedido.quantidade);
-          if (filtro === "preco") {
-            const precoNumerico = parseFloat(pedido.preco.replace(/[R$\s.]/g, "").replace(",", "."));
-            return acumulador + precoNumerico;
-          }
-          return 0;
-        }, 0);
-      })
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        <CircularProgress />
+      </Box>
     );
-
-    {
-      if (filtro === "preco") {
-        const somaPrecos = novoDadosGrafico.reduce((acumulador, precoAtual) => {
-          return acumulador + precoAtual;
-        }, 0);
-        setFaturamento(somaPrecos)
-      }
-    }
-    setChartDataBarra({
-      labels: clientes.map((cliente) => cliente.nome),
-      datasets: [{ label: filtro , data: novoDadosGrafico, backgroundColor: "#4ee2b5" }],
-    });
-  };
-
-
-
-
-  //ATUALIZANDO GRAFICO LINHA
-  const atualizarGraficoLine = async () => {
-    const mesesAtualizados = meses.map(mes => ({ ...mes, valor: 0 }));
-
-    const novoDadosGrafico = await Promise.all(
-      clientes.map(async (cliente) => {
-        const pedidosDoCliente = await acessarPedidosCliente(cliente.id);
-
-        pedidosDoCliente.forEach((pedido) => {
-          const data = new Date(pedido.data);
-          const numeroMes = data.getMonth();
-
-          if (numeroMes >= 0 && numeroMes < 12) {
-            mesesAtualizados[numeroMes].valor++;
-          }
-        });
-
-        return { nome: cliente.nome };
-      })
-    );
-
-    setMeses(mesesAtualizados);
-    setLineChartData({
-      labels: mesesAtualizados.map((mes) => mes.nome),
-      datasets: [
-        {
-          label: "Vendas por Mês",
-          data: mesesAtualizados.map((mes) => mes.valor),
-          borderColor: "#4ee2b5",
-          backgroundColor: "rgba(78, 226, 181, 0.2)",
-          tension: 0.4,
-          fill: true,
-          pointBackgroundColor: "#4ee2b5",
-        },
-      ],
-    });
-  };
-
-
-
-  //ATUALIZANDO GRAFICO BARRA LATERAL
-  const atualizarGraficoBarraLateral = async () => {
-
-    const cidadesAtualizadas = cidades.map(cidade => ({ ...cidade, valor: 0 }));
-
-    await Promise.all(
-      clientes.map(async (cliente) => {
-        const cidadeDoCliente = cliente.cidade
-        const pedidosDoCliente = await acessarPedidosCliente(cliente.id);
-        const quantidadePedidosDoCliente = pedidosDoCliente.length
-        const cidadeEncontrada = cidadesAtualizadas.find(linhaDoArray => linhaDoArray.nome === cidadeDoCliente)
-
-        if (cidadeEncontrada) {
-          cidadeEncontrada.valor += quantidadePedidosDoCliente
-        }
-      })
-    );
-    setCidades(cidadesAtualizadas)
-  };
-
-
-
-  useEffect(() => {
-
-    const ctx = document.getElementById("myChart").getContext("2d");
-
-    const myChart = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: ["Natal", "Fortaleza", "Pipa", "João Pessoa", "Recife", "Porto de Galinhas", "São Miguel"],
-        datasets: [
-          {
-            label: "Votes",
-            data: cidades.map((cidade) => cidade.valor),
-            backgroundColor: [
-              "rgba(161, 120, 241, 1)",
-              "rgba(161, 120, 241, 1)",
-              "rgba(161, 120, 241, 1)",
-              "rgba(161, 120, 241, 1)",
-              "rgba(161, 120, 241, 1)",
-              "rgba(161, 120, 241, 1)",
-            ],
-            borderColor: [
-              "rgba(161, 120, 241, 1)",
-              "rgba(161, 120, 241, 1)",
-              "rgba(161, 120, 241, 1)",
-              "rgba(161, 120, 241, 1)",
-              "rgba(161, 120, 241, 1)",
-              "rgba(161, 120, 241, 1)",
-            ],
-
-            borderWidth: 1,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        indexAxis: "y",
-        scales: {
-          x: {
-            beginAtZero: true,
-          },
-        },
-        plugins: {
-          legend: {
-            labels: {
-              color: "rgba(255, 255, 255, 0.8)",
-            },
-          },
-        },
-        backgroundColor: "rgba(28, 28, 28, 1)",
-      },
-    });
-
-    return () => {
-      myChart.destroy();
-    };
-  }, [cidades]);
-
-
+  }
 
 
   return (
 
-    <Box style={{ backgroundColor: "#121b2a", padding: "40px", paddingTop: "90px" }}>
+    <Box style={{ backgroundColor: "#f2f5fa", padding: "40px", paddingTop: "90px" }}>
 
-      <Box sx={{ width: "100%", height: "100px", marginBottom: "40px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-
+      <Box sx={{ width: "100%",fontFamily: "Roboto regular", height: "100px", marginBottom: "40px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         {indicadores.map((indicador) => {
           const IconComponent = indicador.icone
-          return <DivKpis key={indicador.nome}>
-            <Box sx={{ margin: "5px 5px 5px 20px" }}>
-              <p> {indicador.nome} </p>
-              <p>R${indicador.valor}</p>
-            </Box>
-            <Box sx={{ margin: "18px 18px 6px 6px" }}>
-              <IconComponent />
-            </Box>
-          </DivKpis>
+          return (
+            <DivKpis key={indicador.nome}>
+              <Box sx={{ margin: "5px 5px 5px 20px" }}>
+                <p>{indicador.nome} </p>
+                <p>{indicador.valor}</p>
+              </Box>
+              <Box sx={{ margin: "18px 18px 6px 6px" }}>
+                <IconComponent />
+              </Box>
+            </DivKpis>
+          );
         })}
-
       </Box>
 
 
+      <Grid container spacing={4} justifyContent="center">
 
+        <Grid item xs={12} md={7}>
+          <GraficoLinha linhaChartRef={lineChartRef} memorizedLinhaChartData={memorizedLineChartData} optionsLinha={optionsLine} />
+        </Grid>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ backgroundColor: "#424242", boxShadow: 3, padding: "20px" }}>
-            <Line key={JSON.stringify(lineChartData)} ref={lineChartRef} data={lineChartData} options={optionsLine} />
-          </Card>
+        <Grid item xs={12} md={5}>
+          <GraficoPizza dadosPizza={pizza} />
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <Card sx={{ backgroundColor: "#424242", boxShadow: 3, padding: "20px" }}>
-
-            <Box sx={{ width: "100%", height: "50px", display: "flex", alignItems: "center", fontFamily: "Gilroy semibold", color: "white" }}>
-
-              <span>Faça a análise do Ranking de Vendas por:</span>
-
-              <FormControl variant="outlined" sx={{ height: '30px', padding: '0', margin: '0 0 0 18px', width: "130px" }}>
-                <Select
-                  value={filtro}
-                  onChange={handleChange}
-                  label=""
-                  aria-label="Filtrar por"
-                  sx={{
-                    height: '30px',
-                    padding: '0',
-                    margin: '0',
-                    fontSize: '14px',
-                    color: "white"
-                  }}
-                >
-                  <MenuItem value="preco">preço</MenuItem>
-                  <MenuItem value="quantidade">quantidade</MenuItem>
-                </Select>
-              </FormControl>
-
-
-
-
-            </Box>
-
-
-            <Bar key={JSON.stringify(chartDataBarra)} ref={barChartRef} data={chartDataBarra} options={optionsBarras} />
-
-
-
-
-          </Card>
+          <GraficoBarraQuant barraChartRef={barChartRef} memorizedBarraChartData={memorizedBarChartData} optionsBarra={optionsBarras} filtroBarra={filtro} handleChangeBarra={trocarFiltroGraficoBarraQuant} />
         </Grid>
 
-        <Grid2 sx={{ display: "flex", margin: "25px" }}>
-
-          <Card style={{ backgroundColor: "#424242", width: "500px", height: "300px" }}>
-            <canvas id="myChart" width="400" height="200"></canvas>
-          </Card>
-
-          <Card style={{  backgroundColor: "#03091288", width: "200px", height: "300px", marginLeft: "8px" }}>
-
-          </Card>
-        </Grid2>
+        <Grid item xs={12} md={6}>
+          <GraficoBarraProdutos barraChartRefEstoque={barChartRefEstoqueUmDeCada} memorizedBarraChartDataEstoque={memorizedBarChartDataEstoqueUmDeCada} optionsBarraEstoque={optionsBarrasEstoque} />
+        </Grid>
 
       </Grid>
 
-
-
-
-
-      <Box sx={{ display: "flex", flexDirection: "column", marginTop: "30px" }}>
-        <Typography variant="h6" color="white" sx={{ marginBottom: "20px" }}>
-          Visualizar todos os pedidos de {clienteDaVez}
-        </Typography>
-        <Button variant="contained" color="primary" sx={{ marginBottom: "10px" }}>
-          Visualizar
-        </Button>
-        <Button variant="contained" color="secondary" onClick={atualizarGraficoLine} sx={{ marginBottom: "10px" }}>
-          Filtrar por Data
-        </Button>
-        <Button variant="contained" color="secondary" sx={{ marginBottom: "10px" }} onClick={atualizarGraficoBarraLateral}>
-          Filtrar por Região
-        </Button>
-      </Box>
-
-
-
-
-
     </Box>
+
   );
 };
 

@@ -22,7 +22,7 @@ const router = createBrowserRouter(
     [
       {path: 'cadastro',element:  <CadastroProduto/> },
       {path: 'clientes',element: <Clientes/>},
-      {path: 'dashboard',element: <Dashboard/>},
+      {path: '',element: <Dashboard/>},
       {path: 'pedidos',element: <Pedidos/>},
       {path: 'testes',element: <Testes/>},
       {path: 'pedidoDoCliente/:id/:nome',element: <PedidoClienteIndividual/>},
