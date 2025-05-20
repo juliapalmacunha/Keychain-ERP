@@ -23,12 +23,6 @@ export default function ClientesProvider({ children }) {
     const [pizza, setPizza] = useState([])
 
 
-
-
-
-
-
-
     return (
 
 

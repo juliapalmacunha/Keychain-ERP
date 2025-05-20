@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import LayoutPrincipal from './layouts/LayoutPrincipal';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
+import AuthProvider from './contextos/AuthContext';
 
 
 
@@ -10,7 +11,7 @@ function App() {
 
 
 
-  
+
 
 
   return (
@@ -18,24 +19,24 @@ function App() {
     <>
 
 
-      
 
+      <AuthProvider>
         <LayoutPrincipal>
-          <Outlet  />
+          <Outlet />
           <ToastContainer
-                position="top-right"
-                autoClose={4000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-            />
+            position="top-right"
+            autoClose={4000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
         </LayoutPrincipal>
-
+      </AuthProvider>
 
 
     </>

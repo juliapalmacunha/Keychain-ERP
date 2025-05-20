@@ -1,13 +1,16 @@
 import { useContext, useState } from "react";
 import { ClientesContext } from "../contextos/ClientesContext";
-import { getDocs, collection, doc, updateDoc, addDoc, deleteDoc, query, where, getDoc, setDoc } from "firebase/firestore";
-import { db } from "../Firebase/firebaseConfig";
+import { getDocs, collection, doc, updateDoc, addDoc, deleteDoc, query, where, getDoc } from "firebase/firestore";
+import { auth, db } from "../Firebase/firebaseConfig";
 import { toast } from 'react-toastify';
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 // Hook personalizado com funcionalidades CRUD
 export default function useHookCrud() {
 
 
+    const navigate = useNavigate();
 
     const { clientes, setClientes, pesquisaFiltrada, setPesquisaFiltrada, pesquisaFiltradaProduto, setPesquisaFiltradaProduto, setPedidosDoCliente, setVendasTotais, setFaturamento, setPedidosFiltrados, setPedidosAcumulados, pedidosAcumulados, setEstoqueTotal, setPizza } = useContext(ClientesContext);
 
@@ -414,24 +417,24 @@ export default function useHookCrud() {
     //CALCULO DOS 10 ITENS MAIS VENDIDOS
     const primeirosDezItensMaisVendidos = () => {
         const totalDeItensVendidosOrdemCrescente = pedidosAcumulados
-          .sort((a, b) => b.quantidade - a.quantidade);
-       
+            .sort((a, b) => b.quantidade - a.quantidade);
+
         const top10 = totalDeItensVendidosOrdemCrescente.slice(0, 10);
-      
+
         const novoArray = top10.map((item, index) => {
-          return {
-            id: index,
-            value: item.quantidade,
-            label: item.produto
-          };
+            return {
+                id: index,
+                value: item.quantidade,
+                label: item.produto
+            };
         });
-      
+
         setPizza(novoArray);
-      };
+    };
 
 
-      //CALCULO DA QUANTIDADE TOTAL NO ESTOQUE 
-      const buscaQuantidadeTotalNoEstoqueUmDeCada = async() => {
+    //CALCULO DA QUANTIDADE TOTAL NO ESTOQUE 
+    const buscaQuantidadeTotalNoEstoqueUmDeCada = async () => {
 
         try {
 
@@ -441,13 +444,20 @@ export default function useHookCrud() {
                 ...produto.data(),
             }));
             setEstoqueTotal(dadosEstoque)
-        }catch (e) {
+        } catch (e) {
             console.error("Erro ao enviar dados", e.message);
-           
+
         }
-        
-      }
-      
+
+    }
+
+
+
+   
+
+
+ 
+
 
 
 
@@ -481,8 +491,9 @@ export default function useHookCrud() {
         buscarProdutoNoEstoquePorNome,
         mostraItensMaisVendido,
         primeirosDezItensMaisVendidos,
-        buscaQuantidadeTotalNoEstoqueUmDeCada
+        buscaQuantidadeTotalNoEstoqueUmDeCada,
         
+
     };
 
 

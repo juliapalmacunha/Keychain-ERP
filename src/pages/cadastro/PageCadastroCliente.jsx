@@ -4,7 +4,7 @@ import iconeAnimado from "/imagens/assistencia-social.gif";
 import useHookCrud from "../../hooks/HookCrud";
 import Rodape from "../../components/Rodape";
 
-const CadastroProduto = () => {
+const CadastroCliente = () => {
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [cidade, setCidade] = useState("");
@@ -321,4 +321,4 @@ const CadastroProduto = () => {
   );
 };
 
-export default CadastroProduto;
+export default CadastroCliente;

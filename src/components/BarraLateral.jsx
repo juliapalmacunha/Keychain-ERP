@@ -1,6 +1,8 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
+
 import {
   Drawer,
   Divider,
@@ -9,6 +11,7 @@ import {
   ListItemText
 } from '@mui/material';
 
+
 import {
   Home as HomeIcon,
   PersonAdd as PersonAddIcon,
@@ -16,6 +19,7 @@ import {
   ContentPaste as ContentPasteIcon,
   BarChart as BarChartIcon,
   Inventory as InventoryIcon
+ 
 } from '@mui/icons-material';
 
 
@@ -50,14 +54,24 @@ const BarraLateral = ({ alternarGaveta, estadoGaveta }) => {
           <Divider />
 
 
-          <ListItemButton onClick={alternarGaveta} component={Link} to='' >
+           <ListItemButton onClick={alternarGaveta} component={Link} to='' >
+            <ListItemIcon>
+              <AssignmentIndIcon />
+            </ListItemIcon>
+            <ListItemText primary="User Auth" primaryTypographyProps={estiloFonte} />
+          </ListItemButton>
+
+
+
+
+          <ListItemButton onClick={alternarGaveta} component={Link} to='dashboard' >
             <ListItemIcon>
               <BarChartIcon />
             </ListItemIcon>
             <ListItemText primary="Dashboard" primaryTypographyProps={estiloFonte} />
           </ListItemButton>
 
-          <ListItemButton onClick={alternarGaveta} component={Link} to='cadastro' >
+          <ListItemButton onClick={alternarGaveta} component={Link} to='cadastrocliente' >
             <ListItemIcon>
               <PersonAddIcon />
             </ListItemIcon>

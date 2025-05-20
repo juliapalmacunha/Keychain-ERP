@@ -12,6 +12,7 @@ import {
   ShoppingCart as ShoppingCartIcon,
   Home as HomeIcon
 } from '@mui/icons-material';
+import BotaoDeslogar from './BotaoDeslogar';
 
 
 
@@ -44,12 +45,10 @@ const Cabecalho = ({ alternarGaveta}) => {
 
           <Box sx={{ display: 'flex', alignItems: "center" }}>
             <IconButton>
-              <ShoppingCartIcon sx={{ color: 'white', ":hover": {color: "#eaeaea"} }} />
-            </IconButton>
-
-            <IconButton>
               <HomeIcon sx={{ color: 'white' }}/>
             </IconButton>
+
+              <BotaoDeslogar/>
           </Box>
 
 
